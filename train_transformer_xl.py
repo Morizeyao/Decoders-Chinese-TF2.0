@@ -95,17 +95,16 @@ def main():
             for batch_idx, batch_inputs in enumerate(iter(train_dataset)):
                 batch_inputs = batch_inputs['ids']
 
-                # @tf.function
+
                 def train_step(batch_inputs, mems):
                     inputs, labels = batch_inputs, batch_inputs[:, 1:]
 
                     with tf.GradientTape() as tape:
                         outputs, mems = model([batch_inputs, mems], training=True)[:2]
                         loss = compute_loss(labels, outputs[:, :-1, :])
-                    # tf.print(model.trainable_variables) 有
-                    # print(tape.watched_variables())
                     gradients = tape.gradient(loss, model.trainable_variables)
-                    # tf.print(gradients[0])
+                    print('gradients of first trainable var:')
+                    tf.print(gradients[0])
                     tvars = list({id(v): v for v in model.trainable_variables}.values())
                     optimizer.apply_gradients(zip(gradients, tvars))
                     return loss, mems
