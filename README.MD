@@ -6,7 +6,7 @@
 ## 使用方法
 
 - pip install -r requirements.txt
-- 将scripts文件夹中的三个sh文件拷贝到拷贝到根目录。
+- 将scripts文件夹中的几个sh文件拷贝到拷贝到根目录。
 - 运行prepare_data.sh预处理。
 - 然后运行train_gpt2.sh训练。
 - 运行generate.sh生成。
