@@ -123,3 +123,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.DS_Store
+.idea/Decoders-Chinese-TF2.0.iml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+/tensorboard_summary/
+/data/tokenized/

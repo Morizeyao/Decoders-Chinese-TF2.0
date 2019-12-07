@@ -1,0 +1,38 @@
+{
+  "adaptive": true,
+  "attn_type": 0,
+  "clamp_len": 1000,
+  "cutoffs": [
+    20000,
+    40000,
+    200000
+  ],
+  "d_embed": 1024,
+  "d_head": 64,
+  "d_inner": 4096,
+  "d_model": 1024,
+  "div_val": 4,
+  "dropatt": 0.0,
+  "dropout": 0.1,
+  "ext_len": 0,
+  "init": "normal",
+  "init_range": 0.01,
+  "init_std": 0.02,
+  "mem_len": 1600,
+  "n_head": 16,
+  "n_layer": 18,
+  "n_token": 267735,
+  "pre_lnorm": false,
+  "proj_init_std": 0.01,
+  "same_length": true,
+  "sample_softmax": -1,
+  "tgt_len": 128,
+  "tie_projs": [
+    false,
+    true,
+    true,
+    true
+  ],
+  "tie_weight": true,
+  "untie_r": true
+}
