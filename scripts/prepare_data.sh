@@ -4,6 +4,6 @@ python3 prepare_data.py \
     --save_tfrecord_path data/tokenized/ \
     --min_length 10 \
     --n_ctx 512 \
-    --batch_size 8 \
+    --batch_size 1 \
     --pad 0 \
     --epochs 1

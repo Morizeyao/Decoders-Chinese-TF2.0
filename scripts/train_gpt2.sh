@@ -7,4 +7,4 @@ python3 train_gpt2.py \
   --lr 2e-4 \
   --epochs 10 \
   --steps_per_epoch 100 \
-  --output_dir model/gpt2/
+  --output_dir model/

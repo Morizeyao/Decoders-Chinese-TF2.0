@@ -131,4 +131,7 @@ dmypy.json
 .idea/vcs.xml
 /tensorboard_summary/
 /data/tokenized/
-/model/
+/train_xl.sh
+/train_gpt2.sh
+/prepare_data.sh
+/generate.sh
