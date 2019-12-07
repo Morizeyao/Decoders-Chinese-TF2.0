@@ -17,7 +17,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--n_ctx', default=512, type=int, required=False, help='')
-    parser.add_argument('--model_config', default='config_gpt2/model_config_small.json', type=str, required=False,
+    parser.add_argument('--model_config', default='configs/gpt2/model_config_small.json', type=str, required=False,
                         help='选择模型参数')
     parser.add_argument('--pretrained_model', default='', type=str, required=False, help='模型训练起点路径')
     parser.add_argument('--batch_size', default=2, type=int, required=False, help='训练batch size')
