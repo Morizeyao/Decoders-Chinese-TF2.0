@@ -19,7 +19,7 @@
   "mem_len": 1024,
   "n_head": 8,
   "n_layer": 12,
-  "n_token": 20000,
+  "n_token": 50000,
   "pre_lnorm": false,
   "proj_init_std": 0.01,
   "same_length": true,
