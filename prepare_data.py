@@ -52,7 +52,7 @@ def build_tfrecord(raw_data_path, save_tfrecord_path, spm_model, min_length, n_c
                     for j in range(batch_size):
                         sample = batch[j][start_point:start_point + n_ctx]
                         assert len(sample) == n_ctx
-                        print(sample)
+                        # print(sample)
                         example = ids_example(sample)
                         f.write(example.SerializeToString())
                     start_point += n_ctx
