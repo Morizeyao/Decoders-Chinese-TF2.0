@@ -16,17 +16,17 @@ def _int64_feature(value):
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--n_ctx', default=512, type=int, required=False, help='')
+    parser.add_argument('--n_ctx', default=512, type=int, required=False, help='文本长度')
     parser.add_argument('--model_config', default='configs/xl/config_small.json', type=str, required=False,
                         help='选择模型参数')
     parser.add_argument('--pretrained_model', default='', type=str, required=False, help='模型训练起点路径')
     parser.add_argument('--batch_size', default=1, type=int, required=False, help='训练batch size')
     parser.add_argument('--tfrecord_path', default='data/tokenized/tokenized.tfrecord', type=str, required=False,
-                        help='')
+                        help='预处理完成的数据地址')
     parser.add_argument('--lr', default=2e-4, type=float, required=False, help='学习率')
     parser.add_argument('--total_steps', default=10, type=int, required=False, help='steps')
     parser.add_argument('--output_dir', default='model/', type=str, required=False, help='模型输出路径')
-    parser.add_argument('--log_step', default=1, type=int, required=False)
+    parser.add_argument('--log_step', default=1, type=int, required=False, help='多少步报告一次')
     parser.add_argument('--writer_dir', default='tensorboard_summary/', type=str, required=False, help='Tensorboard路径')
     args = parser.parse_args()
     print('args:\n' + args.__repr__())

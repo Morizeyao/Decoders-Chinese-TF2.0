@@ -10,3 +10,7 @@
 - 运行prepare_data.sh预处理。
 - 然后运行train_gpt2_keras.sh训练。
 - 运行generate_gpt2_keras.sh生成。
+
+## 数据格式
+
+- 本项目采用的语料格式为一个txt文件，每一行是一个json的列表，这个列表中包含了一篇文章。

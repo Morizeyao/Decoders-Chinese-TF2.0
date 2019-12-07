@@ -21,13 +21,13 @@ def main():
     parser.add_argument('--pretrained_model', default='', type=str, required=False, help='模型训练起点路径')
     parser.add_argument('--batch_size', default=1, type=int, required=False, help='训练batch size')
     parser.add_argument('--tfrecord_path', default='data/tokenized/tokenized.tfrecord', type=str, required=False,
-                        help='')
+                        help='预处理完成的数据地址')
     parser.add_argument('--lr', default=2e-4, type=float, required=False, help='学习率')
-    parser.add_argument('--epochs', default=2, type=int, required=False, help='steps')
-    parser.add_argument('--steps_per_epoch', default=100, type=int, required=False, help='steps')
+    parser.add_argument('--epochs', default=2, type=int, required=False, help='训练几个epoch')
+    parser.add_argument('--steps_per_epoch', default=100, type=int, required=False, help='每个epoch多少步')
     parser.add_argument('--output_dir', default='model/', type=str, required=False, help='模型输出路径')
     parser.add_argument('--writer_dir', default='tensorboard_summary/', type=str, required=False, help='Tensorboard路径')
-    parser.add_argument('--save_interval', default=10, type=int)
+    parser.add_argument('--save_interval', default=10, type=int, help='多少步保存一次模型')
     args = parser.parse_args()
     print('args:\n' + args.__repr__())
 

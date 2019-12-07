@@ -70,14 +70,14 @@ def build_tfrecord(raw_data_path, save_tfrecord_path, spm_model, min_length, n_c
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--spm_model_path', default='spm_model/ch.model', type=str, required=False)
-    parser.add_argument('--raw_data_path', default='data/train_test.txt', type=str, required=False)
-    parser.add_argument('--save_tfrecord_path', default='data/tokenized/', type=str, required=False)
-    parser.add_argument('--min_length', default=10, type=int, required=False)
-    parser.add_argument('--n_ctx', default=512, type=int, required=False)
-    parser.add_argument('--batch_size', default=8, type=int, required=False)
-    parser.add_argument('--pad', default=0, type=int, required=False)
-    parser.add_argument('--epochs', default=1, type=int, required=False)
+    parser.add_argument('--spm_model_path', default='spm_model/ch.model', type=str, required=False, help='sentencepiece模型地址')
+    parser.add_argument('--raw_data_path', default='data/train_test.txt', type=str, required=False, help='原始语料地址')
+    parser.add_argument('--save_tfrecord_path', default='data/tokenized/', type=str, required=False, help='处理后的语料存放地址')
+    parser.add_argument('--min_length', default=10, type=int, required=False, help='最短收录句子长度')
+    parser.add_argument('--n_ctx', default=512, type=int, required=False, help='每个训练样本的长度')
+    parser.add_argument('--batch_size', default=8, type=int, required=False, help='只用于XL模型，XL模型的batch size，GPT2设置为1')
+    parser.add_argument('--pad', default=0, type=int, required=False, help='PAD值')
+    parser.add_argument('--epochs', default=1, type=int, required=False, help='只用于XL模型，GPT2设置为1')
 
     args = parser.parse_args()
     print('args:\n' + args.__repr__())
