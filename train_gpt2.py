@@ -1,8 +1,9 @@
+import transformers
 import tensorflow as tf
+import os
 import numpy as np
 import argparse
-import modeling_gpt2
-import tensorflow_addons as tfa
+from datetime import datetime
 
 
 def _int64_feature(value):
@@ -19,27 +20,18 @@ def main():
     parser.add_argument('--model_config', default='config_gpt2/model_config_small.json', type=str, required=False,
                         help='选择模型参数')
     parser.add_argument('--pretrained_model', default='', type=str, required=False, help='模型训练起点路径')
-    parser.add_argument('--batch_size', default=1, type=int, required=False, help='训练batch size')
+    parser.add_argument('--batch_size', default=2, type=int, required=False, help='训练batch size')
     parser.add_argument('--tfrecord_path', default='data/tokenized/tokenized.tfrecord', type=str, required=False,
                         help='')
     parser.add_argument('--lr', default=2e-4, type=float, required=False, help='学习率')
-    parser.add_argument('--epochs', default=2, type=int, required=False, help='steps')
-    parser.add_argument('--steps_per_epoch', default=100, type=int, required=False, help='steps')
+    parser.add_argument('--total_steps', default=10, type=int, required=False, help='steps')
     parser.add_argument('--output_dir', default='model/', type=str, required=False, help='模型输出路径')
+    parser.add_argument('--log_step', default=1, type=int, required=False)
     parser.add_argument('--writer_dir', default='tensorboard_summary/', type=str, required=False, help='Tensorboard路径')
-    parser.add_argument('--save_interval', default=10, type=int)
     args = parser.parse_args()
     print('args:\n' + args.__repr__())
 
-    class AutoSaveCallback(tf.keras.callbacks.Callback):
-        def on_train_batch_begin(self, batch, logs=None):
-            if (batch + 1) % args.save_interval == 0:
-                self.model.save_pretrained(args.output_dir)
-
-    callbacks = [
-        tf.keras.callbacks.TensorBoard(log_dir=args.writer_dir),
-        AutoSaveCallback()
-    ]
+    summary_writer = tf.summary.create_file_writer(args.writer_dir)
     print('getting dataset')
     feature_description = {
         'ids': tf.io.FixedLenFeature([args.n_ctx], tf.int64)}
@@ -50,40 +42,114 @@ def main():
     ds = tf.data.TFRecordDataset(args.tfrecord_path)
 
     train_dataset = ds.map(_parse_function)
-
-    def parse_2(example):
-        return example['ids'][:-1], example['ids'][1:]
-
-    train_dataset = train_dataset.map(parse_2)
     print('getting dataset done')
     # get dataset done
-    print('total steps = {}'.format(args.epochs * args.steps_per_epoch))
+    print('total steps = {}'.format(args.total_steps))
 
-    train_dataset = train_dataset.batch(args.batch_size, drop_remainder=True).shuffle(128)
+    train_dataset = train_dataset.batch(args.batch_size, drop_remainder=True)
 
     strategy = tf.distribute.MirroredStrategy()
     print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
     print('starting training')
     with strategy.scope():
-        model_config = modeling_gpt2.GPT2Config.from_json_file(args.model_config)
+        model_config = transformers.configuration_gpt2.GPT2Config.from_json_file(args.model_config)
         if not args.pretrained_model:
-            model = modeling_gpt2.TFGPT2LMHeadModel(config=model_config)
+            model = transformers.modeling_tf_gpt2.TFGPT2LMHeadModel(config=model_config)
         else:
-            model = modeling_gpt2.TFGPT2LMHeadModel(args.pretrained_model)
+            model = transformers.modeling_tf_gpt2.TFGPT2LMHeadModel.from_pretrained(args.pretrained_model)
         dummy = tf.constant(np.ones((args.batch_size, args.n_ctx)), dtype=tf.int32)
+        # print(dummy.shape)
         _ = model([dummy])
 
         model.summary()
-        optimizer = tfa.optimizers.RectifiedAdam(
-            lr=args.lr,
-            total_steps=args.epochs * args.steps_per_epoch,
-            warmup_proportion=0.1,
-            min_lr=1e-5,
-        )
-        loss_function = tf.keras.losses.SparseCategoricalCrossentropy()
-        model.compile(optimizer, loss_function)
-    model.fit(train_dataset, callbacks=callbacks, epochs=args.epochs, steps_per_epoch=args.steps_per_epoch)
-    model.save_pretrained(args.output_dir)
+        # print(model.trainable_variables)
+
+        scheduler = tf.keras.optimizers.schedules.PolynomialDecay(initial_learning_rate=args.lr,
+                                                                  decay_steps=args.total_steps,
+                                                                  end_learning_rate=args.lr * 0.01)
+        optimizer = tf.keras.optimizers.Adam(learning_rate=scheduler)
+        loss_function = tf.keras.losses.SparseCategoricalCrossentropy(reduction=tf.keras.losses.Reduction.NONE)
+
+        def compute_loss(labels, predictions):
+            per_example_loss = loss_function(labels, predictions)
+            # tf.print(per_example_loss)
+            return tf.nn.compute_average_loss(per_example_loss, global_batch_size=args.batch_size)
+
+
+        running_loss = 0
+        step = 0
+        epoch = 0
+
+
+        print('saving initial model')
+        if not os.path.exists(args.output_dir + 'model_temp_step{}'.format(step)):
+            os.makedirs(args.output_dir + 'model_temp_step{}'.format(step))
+        model.save_pretrained(args.output_dir + 'model_temp_step{}'.format(step))
+
+
+        print('epoch {}'.format(epoch + 1))
+        now = datetime.now()
+        print('time: {}'.format(now))
+        while True:
+            for batch_idx, batch_inputs in enumerate(iter(train_dataset)):
+                batch_inputs = batch_inputs['ids']
+
+
+                def train_step(batch_inputs):
+                    inputs, labels = batch_inputs, batch_inputs
+
+                    with tf.GradientTape() as tape:
+                        outputs= model(batch_inputs, training=True)[0]
+                        loss = compute_loss(labels[:, 1:], outputs[:, :-1, :])
+                    gradients = tape.gradient(loss, model.trainable_variables)
+                    tvars = list({id(v): v for v in model.trainable_variables}.values())
+                    optimizer.apply_gradients(zip(gradients, tvars))
+                    return loss
+
+                @tf.function
+                def get_loss(work, batch_inputs):
+                    per_replica_losses = strategy.experimental_run_v2(work, args=[batch_inputs])
+                    loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses,
+                                           axis=None)
+                    return loss
+
+                loss = get_loss(train_step, batch_inputs)
+                running_loss += loss
+                if (step + 1) % args.log_step == 0:
+                    with summary_writer.as_default():
+                        tf.summary.scalar("loss", running_loss / args.log_step, step=step)
+                        summary_writer.flush()
+                    print('now time: {}:{}. Step {} of epoch {}, unscaled loss {}'.format(
+                        datetime.now().hour,
+                        datetime.now().minute,
+                        batch_idx + 1,
+                        epoch + 1,
+                        running_loss / args.log_step))
+                    running_loss = 0
+                step += 1
+                if step > args.total_steps:
+                    break
+                if (step + 1) % 10000 == 0:
+                    print('saving model temp')
+                    if not os.path.exists(args.output_dir + 'model_temp_step{}'.format(step)):
+                        os.makedirs(args.output_dir + 'model_temp_step{}'.format(step))
+                    model.save_pretrained(args.output_dir + 'model_temp_step{}'.format(step))
+            epoch += 1
+
+            print('saving model for epoch {}'.format(epoch + 1))
+            if not os.path.exists(args.output_dir + 'model_epoch{}'.format(epoch + 1)):
+                os.makedirs(args.output_dir + 'model_epoch{}'.format(epoch + 1))
+            model.save_pretrained(args.output_dir + 'model_epoch{}'.format(epoch + 1))
+            print('epoch {} finished'.format(epoch + 1))
+
+        then = datetime.now()
+        print('time: {}'.format(then))
+        print('time for one epoch: {}'.format(then - now))
+
+        print('training finished')
+        if not os.path.exists(args.output_dir + 'final_model'):
+            os.makedirs(args.output_dir + 'final_model')
+        model.save_pretrained(args.output_dir + 'final_model')
 
 
 if __name__ == '__main__':
