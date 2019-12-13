@@ -78,7 +78,7 @@ def main():
             lr=args.lr,
             total_steps=args.epochs * args.steps_per_epoch,
             warmup_proportion=0.1,
-            min_lr=1e-5,
+            min_lr=1e-6,
         )
         loss_function = tf.keras.losses.SparseCategoricalCrossentropy()
         model.compile(optimizer, loss_function)
