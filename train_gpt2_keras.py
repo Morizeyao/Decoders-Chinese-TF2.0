@@ -59,7 +59,7 @@ def main():
     # get dataset done
     print('total steps = {}'.format(args.epochs * args.steps_per_epoch))
 
-    train_dataset = train_dataset.batch(args.batch_size, drop_remainder=True).shuffle(128)
+    train_dataset = train_dataset.batch(args.batch_size, drop_remainder=True).shuffle(128).repeat(args.epochs)
 
     strategy = tf.distribute.MirroredStrategy()
     print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
