@@ -1,7 +1,6 @@
 # 基于Tensorflow 2.0 与 Huggingface 的 [Transformers](https://github.com/huggingface/transformers) 的 GPT2 与 Transformer-XL 训练代码
 
 - 目前只有GPT2部分可用。
-- 即使是GPT2部分也仅在CPU机器上测试通过。
 
 ## 使用方法
 
