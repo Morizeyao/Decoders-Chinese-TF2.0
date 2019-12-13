@@ -1,4 +1,4 @@
-python3 train_gpt2.py \
+python3 train_gpt2_keras.py \
   --n_ctx 512 \
   --model_config configs/gpt2/model_config_small.json \
   --pretrained_model '' \
