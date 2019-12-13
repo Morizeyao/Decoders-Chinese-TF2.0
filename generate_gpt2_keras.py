@@ -74,7 +74,7 @@ def main():
                         help='模型参数')
     parser.add_argument('--spm_model_path', default='spm_model/ch.model', type=str, required=False, help='')
     parser.add_argument('--model_path', default='model/', type=str, required=False, help='模型路径')
-    parser.add_argument('--prefix', default='鸊', type=str, required=False, help='生成文章的开头')
+    parser.add_argument('--prefix', default='丨', type=str, required=False, help='生成文章的开头')
     parser.add_argument('--repetition_penalty', default=1.1, type=float, required=False)
     parser.add_argument('--n_ctx', default=512, type=int)
     args = parser.parse_args()
