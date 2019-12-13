@@ -69,7 +69,7 @@ def main():
         if not args.pretrained_model:
             model = modeling_gpt2.TFGPT2LMHeadModel(config=model_config)
         else:
-            model = modeling_gpt2.TFGPT2LMHeadModel(args.pretrained_model)
+            model = modeling_gpt2.TFGPT2LMHeadModel.from_pretrained(args.pretrained_model)
         dummy = tf.constant(np.ones((args.batch_size, args.n_ctx)), dtype=tf.int32)
         _ = model([dummy])
 
