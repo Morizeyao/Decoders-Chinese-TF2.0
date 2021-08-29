@@ -41,7 +41,7 @@ def main():
 
     ds = tf.data.TFRecordDataset(args.tfrecord_path)
 
-    train_dataset = ds.map(_parse_function)
+    train_dataset = ds.map(_parse_function,num_parallel_calls=tf.data.experimental.AUTOTUNE)
     print('getting dataset done')
     # get dataset done
     print('total steps = {}'.format(args.total_steps))

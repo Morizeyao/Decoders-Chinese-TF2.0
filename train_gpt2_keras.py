@@ -49,12 +49,12 @@ def main():
 
     ds = tf.data.TFRecordDataset(args.tfrecord_path)
 
-    train_dataset = ds.map(_parse_function)
+    train_dataset = ds.map(_parse_function,num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     def parse_2(example):
         return example['ids'][:-1], example['ids'][1:]
 
-    train_dataset = train_dataset.map(parse_2)
+    train_dataset = train_dataset.map(parse_2,num_parallel_calls=tf.data.experimental.AUTOTUNE)
     print('getting dataset done')
     # get dataset done
     print('total steps = {}'.format(args.epochs * args.steps_per_epoch))
